@@ -25,7 +25,6 @@ if(typeof(L) !== 'undefined') {
         initialize: function (options) {
             var self = this;
             options = options || {};
-            //this.project = this._project.bind(this);
             this.render = this.render.bind(this);
             L.Util.setOptions(this, options);
             this._canvas = this._createCanvas();
@@ -190,13 +189,6 @@ if(typeof(L) !== 'undefined') {
             this.onResize();
             this._render();
         },
-
-        /*
-        _project: function(x) {
-            var point = this._map.latLngToLayerPoint(new L.LatLng(x[1], x[0]));
-            return [point.x, point.y];
-        },
-        */
 
         _updateOpacity: function () { },
 

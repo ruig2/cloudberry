@@ -14,6 +14,8 @@ var vertCode = `
     `;
 
 
+// Draw the blue pinned points
+
 // noinspection JSAnnotator
 var fragCode = `
         precision mediump float;
@@ -43,6 +45,10 @@ var fragCode = `
     `;
 
 
+// Compute the location to tweet id mapping
+// For every point (x, y) in the map, if there is a twitter whose location is nearby,
+// then return the corresponding twitter id
+
 // noinspection JSAnnotator
 var fragCode2 = `
         precision mediump float;
@@ -52,15 +58,13 @@ var fragCode2 = `
             float border = 0.05;
             float radius = 0.5;
             vec4 color0 = vec4(0.0, 0.0, 0.0, 1.0);
-            // ??? color1 is the ID of the corresponding tweet rather than color of the point?
+            // color1 is the ID of the corresponding tweet rather than color of the point
             vec4 color1 = vec4(v_index.xyz/255.0, 1.0);
 
-            // ??? What's the value of gl_PointCoord.xy? Where is (0.5, 0.5)?
             vec2 m = gl_PointCoord.xy - vec2(0.5, 0.5);
-            // Is the dist used? The point to be detected seems to be the one within the gl_PointSize?
             float dist = radius - sqrt(m.x*m.x + m.y*m.y);
             // color0 is never used?
-            //gl_FragColor = dist > border ? color1 : color1;
+            //gl_FragColor = dist > border ? color1 : color0;
             gl_FragColor = dist > border ? color1 : color0;
         }
     `;

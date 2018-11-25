@@ -30,7 +30,7 @@ var WebGLPointLayer = L.CanvasLayer.extend({
     },
 
 
-    // ??? Never called
+    // ??? Not used now
     appendData: function(data) {
         if ( this._checkData(data) ) {
             this._data = this._data.concat(data);
@@ -87,11 +87,13 @@ var WebGLPointLayer = L.CanvasLayer.extend({
             preserveDrawingBuffer: true,
             premultipliedAlpha: false
           });
-          if (!this._gl) canvas.getContext("webgl", {
-            antialias: true,
-            preserveDrawingBuffer: true,
-            premultipliedAlpha: false
-          });
+          if (!this._gl) {
+            canvas.getContext("webgl", {
+              antialias: true,
+              preserveDrawingBuffer: true,
+              premultipliedAlpha: false
+            });
+          }
         } catch (e) {}
         if (!this._gl) {
             alert("Could not initialise WebGL, sorry :-(");
@@ -183,13 +185,13 @@ var WebGLPointLayer = L.CanvasLayer.extend({
         if ( gl == null || this._data == null ) return;
 
         var verts = [];
-        // ??? Why not id = 0; id < this._data.length
-        for ( var id = 1; id <= this._data.length; ++id ) {
-            var pixel = this._LatLongToPixel_XY(this._data[id - 1][0], this._data[id - 1][1]);
+        for ( var id = 0; id < this._data.length; ++id ) {
+            var pixel = this._LatLongToPixel_XY(this._data[id][0], this._data[id][1]);
 
-            // ??? is r, g, b here the color? Or we just need to present the data in 3-dimensions?
-            ///// id = r + 256*g + 256^2*b
-            ///// id is up to 2^12 which is 1 billion
+            // In the invisible and hidden layer, we draw points in the location of the twitter message
+            // with the point rgb color set to be the id of the twitter message
+            // id = r + 256*g + 256^2*b
+            // id is up to 2^12 which is 1 billion
             var r = Math.floor(id / (65536));
             var g = Math.floor((id % (65536)) / 256);
             var b = id % 256;
@@ -273,8 +275,8 @@ var WebGLPointLayer = L.CanvasLayer.extend({
 
         pixelsToWebGLMatrix.set([2 / canvas.width, 0, 0, 0, 0, -2 / canvas.height, 0, 0, 0, 0, 0, 0, -1, 1, 0, 1]);
         var pointSize = Math.max(map.getZoom() - 4.0, this._pointSize);
-        //var pointSize = 20;
-        // var pointSize = Math.max(map.getZoom() - 4.0, 1.0);
+        // ??? For Debug purpose
+        pointSize = 20;
         console.log("map.getZoom() = " + map.getZoom() + ", pointSize = " + pointSize);
         mapMatrix.set(pixelsToWebGLMatrix);
         var bounds = map.getBounds();
@@ -287,26 +289,32 @@ var WebGLPointLayer = L.CanvasLayer.extend({
         gl.viewport(0, 0, canvas.width, canvas.height);
 
         // Pass 1
-        // Draw the blue pinned points
+        // Compute the location to tweet id mapping
+        // For every point (x, y) in the map, if there is a twitter whose location is nearby,
+        // then return the corresponding twitter id
 
+/*
         gl.useProgram(this._programs[1]);
         gl.bindFramebuffer(this._gl.FRAMEBUFFER, this._fb);
         gl.disable(gl.BLEND);
+        // For debug purpose: show the hidden layer
+        //gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
+        //gl.enable(gl.BLEND);
 
         gl.clearColor(0.0, 0.0, 0.0, 0.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
 
-        // aPointSize seems to be never used; instead there is a this._programs[0].PointSize
-        gl.vertexAttrib1f(this._programs[1].aPointSize, pointSize);
         gl.uniformMatrix4fv(this._programs[1].matLoc, false, mapMatrix);
+        //gl.uniform1f(this._programs[1].pointSize, 1.2*pointSize);
+        // ??? debug purpose
         gl.uniform1f(this._programs[1].pointSize, 1.2*pointSize);
-        //gl.uniform1f(this._programs[1].pointSize, 12*pointSize);
 
         if ( this._data )
             gl.drawArrays(gl.POINTS, 0, this._data.length);
+            */
 
         // Pass 2
-        // Compute the cursor location to pinned points/tweets map
+        // Draw the blue pinned points
 
         gl.useProgram(this._programs[0]);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -316,8 +324,6 @@ var WebGLPointLayer = L.CanvasLayer.extend({
         gl.clearColor(0.0, 0.0, 0.0, 0.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
 
-        // aPointSize seems to be never used; instead there is a this._programs[0].PointSize
-        gl.vertexAttrib1f(this._programs[0].aPointSize, 10.0);
         gl.uniformMatrix4fv(this._programs[0].matLoc, false, mapMatrix);
 
         console.log("pointColor = [" + this._pointColorX + "," + this._pointColorY + "," + this._pointColorZ + "]");
