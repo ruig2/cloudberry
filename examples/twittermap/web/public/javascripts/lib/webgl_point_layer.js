@@ -293,7 +293,6 @@ var WebGLPointLayer = L.CanvasLayer.extend({
         // For every point (x, y) in the map, if there is a twitter whose location is nearby,
         // then return the corresponding twitter id
 
-/*
         gl.useProgram(this._programs[1]);
         gl.bindFramebuffer(this._gl.FRAMEBUFFER, this._fb);
         gl.disable(gl.BLEND);
@@ -311,7 +310,6 @@ var WebGLPointLayer = L.CanvasLayer.extend({
 
         if ( this._data )
             gl.drawArrays(gl.POINTS, 0, this._data.length);
-            */
 
         // Pass 2
         // Draw the blue pinned points
